@@ -19,6 +19,7 @@ use std::ffi;
 use std::os::raw::c_char;
 use std::path::Path;
 use std::rc::Rc;
+use std::sync::Arc;
 use std::slice;
 use std::str;
 
@@ -250,7 +251,7 @@ pub trait Read: Sized {
 #[derive(Debug)]
 pub struct Reader {
     htsfile: *mut htslib::htsFile,
-    header: Rc<HeaderView>,
+    header: Arc<HeaderView>,
     tpool: Option<ThreadPool>,
 }
 
@@ -298,7 +299,7 @@ impl Reader {
 
         Ok(Reader {
             htsfile,
-            header: Rc::new(HeaderView::new(header)),
+            header: Arc::new(HeaderView::new(header)),
             tpool: None,
         })
     }
@@ -383,7 +384,7 @@ impl Read for Reader {
             -2 => Some(Err(Error::BamTruncatedRecord)),
             -4 => Some(Err(Error::BamInvalidRecord)),
             _ => {
-                record.set_header(Rc::clone(&self.header));
+                record.set_header(Arc::clone(&self.header));
 
                 Some(Ok(()))
             }
@@ -591,7 +592,7 @@ impl<'a, T: AsRef<[u8]>, X: Into<FetchCoordinate>, Y: Into<FetchCoordinate>> Fro
 #[derive(Debug)]
 pub struct IndexedReader {
     htsfile: *mut htslib::htsFile,
-    header: Rc<HeaderView>,
+    header: Arc<HeaderView>,
     idx: Rc<IndexView>,
     itr: Option<*mut htslib::hts_itr_t>,
     tpool: Option<ThreadPool>,
@@ -637,7 +638,7 @@ impl IndexedReader {
         } else {
             Ok(IndexedReader {
                 htsfile,
-                header: Rc::new(HeaderView::new(header)),
+                header: Arc::new(HeaderView::new(header)),
                 idx: Rc::new(IndexView::new(idx)),
                 itr: None,
                 tpool: None,
@@ -665,7 +666,7 @@ impl IndexedReader {
         } else {
             Ok(IndexedReader {
                 htsfile,
-                header: Rc::new(HeaderView::new(header)),
+                header: Arc::new(HeaderView::new(header)),
                 idx: Rc::new(IndexView::new(idx)),
                 itr: None,
                 tpool: None,
@@ -977,7 +978,7 @@ impl Read for IndexedReader {
                     -2 => Some(Err(Error::BamTruncatedRecord)),
                     -4 => Some(Err(Error::BamInvalidRecord)),
                     _ => {
-                        record.set_header(Rc::clone(&self.header));
+                        record.set_header(Arc::clone(&self.header));
 
                         Some(Ok(()))
                     }

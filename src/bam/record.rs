@@ -11,7 +11,7 @@ use std::marker::PhantomData;
 use std::mem::{size_of, MaybeUninit};
 use std::ops;
 use std::os::raw::c_char;
-use std::rc::Rc;
+use std::sync::Arc;
 use std::slice;
 use std::str;
 use std::u32;
@@ -54,7 +54,7 @@ pub struct Record {
     pub inner: htslib::bam1_t,
     own: bool,
     cigar: Option<CigarStringView>,
-    header: Option<Rc<HeaderView>>,
+    header: Option<Arc<HeaderView>>,
 }
 
 unsafe impl Send for Record {}
@@ -184,7 +184,7 @@ impl Record {
         }
     }
 
-    pub fn set_header(&mut self, header: Rc<HeaderView>) {
+    pub fn set_header(&mut self, header: Arc<HeaderView>) {
         self.header = Some(header);
     }
 
